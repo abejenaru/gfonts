@@ -1,1 +1,1 @@
-# gfonts
+# gfonts: hack to locally store Google Fonts
