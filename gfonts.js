@@ -1,5 +1,6 @@
 const fs = require('fs');
 const fetch = require('node-fetch');
+const HttpsProxyAgent = require('https-proxy-agent');
 require('dotenv').config()
 
 const API_KEY = process.env.GFONTS_API_KEY;
@@ -11,7 +12,14 @@ const FONTS_FOLDER = 'fonts';
 
 const WEBFONTS_API_URL = new URL("https://www.googleapis.com/webfonts/v1/webfonts");
 const CSS_API_URL = new URL("https://fonts.googleapis.com/css2");
+
 const headers = new fetch.Headers({ 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.83 Safari/537.36' });
+const proxyUrl = process.env.https_proxy || process.env.http_proxy;
+let agent;
+if (proxyUrl.length > 0) {
+  agent = new HttpsProxyAgent(proxyUrl);
+}
+const FETCH_OPTS = { headers: headers, agent: agent };
 
 // Check if the config file exists in the current directory.
 try {
@@ -36,7 +44,7 @@ const fontFamilies = Object.keys(fontsConfig);
   // Retrieve definitions for all fonts.
   WEBFONTS_API_URL.searchParams.append('key', API_KEY);
   WEBFONTS_API_URL.searchParams.append('sort', 'popularity');
-  const response = await fetch(WEBFONTS_API_URL, { headers : headers });
+  const response = await fetch(WEBFONTS_API_URL, FETCH_OPTS);
   const json = await response.json();
 
   // Clean definitions json.
@@ -56,7 +64,7 @@ const fontFamilies = Object.keys(fontsConfig);
   
   // Loop throught the monitored fonts.
   for (const fontFamily of fontFamilies) {
-    console.log(`Processing '${fontFamily}' font family... `);
+    process.stdout.write(`Processing '${fontFamily}' font family... `);
 
     const fontFamilyFolder = [FONTS_FOLDER, '/', fontFamily].join('');
     const localFontVersion = fontsConfig[fontFamily];
@@ -72,17 +80,17 @@ const fontFamilies = Object.keys(fontsConfig);
 
     // Check if font family exists.
     if (remoteFontVersion === '') {
-      console.log('Font family not found on server!');
+      console.log('font family not found on server!');
       continue;
     }
 
     // Check versions.
     if (remoteFontVersion === localFontVersion) {
-      console.log(`Same version ${localFontVersion} found, skipping... `);
+      console.log(`same version ${localFontVersion} found, skipping.`);
       continue;
     }
 
-    process.stdout.write(`New version ${remoteFontVersion} found... `);
+    process.stdout.write(`new version ${remoteFontVersion} found... `);
 
     // Check for font family folder.
     try {
@@ -107,7 +115,7 @@ const fontFamilies = Object.keys(fontsConfig);
     CSS_API_URL.searchParams.append('display', 'swap');
 
     // Fetch CSS / font family.
-    fetch(CSS_API_URL, { headers: headers })
+    fetch(CSS_API_URL, FETCH_OPTS)
       .then(res => res.text())
       .then(cssBody => {
         const reBlock = /\/\*\s([a-z-]+)\s\*\/([^}]+})/g;
@@ -127,7 +135,7 @@ const fontFamilies = Object.keys(fontsConfig);
           const fontFileName = [[fontFamily.replace(' ', '-'), remoteFontVersion, subset, weight].join('-'), style, '.woff2'].join('');
 
           // Fetch font files (.woff).
-          fetch(fontUrl, { headers: headers })
+          fetch(fontUrl, FETCH_OPTS)
           .then(res => res.buffer())
           .then(buffer => fs.writeFile([fontFamilyFolder, '/', fontFileName].join(''), buffer, (err) => {
             if (err) throw err;
