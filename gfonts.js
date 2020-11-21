@@ -16,7 +16,7 @@ const CSS_API_URL = new URL("https://fonts.googleapis.com/css2");
 const headers = new fetch.Headers({ 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.83 Safari/537.36' });
 const proxyUrl = process.env.https_proxy || process.env.http_proxy;
 let agent;
-if (proxyUrl.length > 0) {
+if (typeof proxyUrl != "undefined" && proxyUrl.length > 0) {
   agent = new HttpsProxyAgent(proxyUrl);
 }
 const FETCH_OPTS = { headers: headers, agent: agent };
