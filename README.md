@@ -1,1 +1,1 @@
-# gfonts: hack to locally store Google Fonts
+# gfonts: nodejs script to download & maintain a local Google Fonts repository
