@@ -1,3 +1,4 @@
+const os = require("os");
 const fs = require('fs');
 const fetch = require('node-fetch');
 const HttpsProxyAgent = require('https-proxy-agent');
@@ -124,40 +125,76 @@ const fontFamilies = Object.keys(fontsConfig);
       .then(cssBody => {
         const reBlock = /\/\*\s([a-z-]+)\s\*\/([^}]+})/g;
         const reStyle = /font-style:\s*([^;]+);/;
-        const reWeight = /font-weight:\s*([^;]+);/;
-        const reWoff = /url\((https:\/\/fonts\.gstatic\.com[^.]+\.woff2)\)/;
+        const reWeight= /font-weight:\s*([^;]+);/;
+        const reWoff  = /url\((https:\/\/fonts\.gstatic\.com[^.]+\.woff2)\)/;
 
         // Parse subset blocks
         const matches = [...cssBody.matchAll(reBlock)];
         matches.forEach(cssBlock => {
-          const subset = cssBlock[1];
-          const style = cssBlock[0].match(reStyle)[1] == 'normal' ? '' : cssBlock[0].match(reStyle)[1];
-          const weight = cssBlock[0].match(reWeight)[1];
-          const fontUrl = cssBlock[0].match(reWoff)[1];
+          const subset  = cssBlock[1];
+          let fontBlock = cssBlock[0];
+          const style   = fontBlock.match(reStyle)[1] == 'normal' ? '' : fontBlock.match(reStyle)[1];
+          const weight  = fontBlock.match(reWeight)[1];
+          const fontUrl = fontBlock.match(reWoff)[1];
 
           // Generate local font file name.
-          const fontFileName = [[fontFamily.replace(' ', '-'), remoteFontVersion, subset, weight].join('-'), style, '.woff2'].join('');
+          const fontFileName = [
+              [
+                fontFamily.replace(' ', '-'),
+                remoteFontVersion,
+                subset,
+                weight
+              ].join('-'),
+              style,
+              '.woff2'
+            ].join('');
 
           // Fetch font files (.woff).
           fetch(fontUrl, FETCH_OPTS)
-          .then(res => res.buffer())
-          .then(buffer => fs.writeFile([fontFamilyFolder, '/', fontFileName].join(''), buffer, (err) => {
-            if (err) throw err;
-          }));
+            .then(res => res.buffer())
+            .then(buffer => fs.writeFile([fontFamilyFolder, '/', fontFileName].join(''), buffer, (err) => {
+              if (err) throw err;
+            }));
 
           // Replace remote URLs with local.
-          cssBody = cssBody.replace(fontUrl, ["'", fontFileName, "'"].join(''));
+          cssBody   = cssBody.replace(fontUrl, ["'", fontFileName, "'"].join(''));
+          fontBlock = fontBlock.replace(fontUrl, ["'", fontFileName, "'"].join(''));
+
+          // Write CSS file to disk.
+          const cssSubsetFileName = [
+              [
+                fontFamily.replace(' ', '-'),
+                remoteFontVersion,
+                subset
+              ].join('-'),
+              '.css'
+            ].join('');
+
+          fs.appendFile([fontFamilyFolder, '/', cssSubsetFileName].join(''), fontBlock + os.EOL, (err) => {
+              if (err) throw err;
+            });
+  
         });
 
         // Write CSS file to disk.
-        const cssFileName = [[fontFamily.replace(' ', '-'), remoteFontVersion].join('-'), '.css'].join('');
+        const cssFileName = [
+            [
+              fontFamily.replace(' ', '-'),
+              remoteFontVersion,
+              'all'
+            ].join('-'),
+            '.css'
+          ].join('');
+
         fs.writeFile([fontFamilyFolder, '/', cssFileName].join(''), cssBody, (err) => {
-          if (err) throw err;
-        });
+            if (err) throw err;
+          });
       });
 
     // Update local version.
-    fontsConfig[fontFamily] = remoteFontVersion;
+    if (!DEBUG) {
+      fontsConfig[fontFamily] = remoteFontVersion;
+    }
 
     console.log('done!');
 
@@ -167,8 +204,8 @@ const fontFamilies = Object.keys(fontsConfig);
 
   // Write updated fonts config file.
   fs.writeFile(FONTS_DEFINITION_FILE, JSON.stringify(fontsConfig, null, 2), (err) => {
-    if (err) throw err;
-  });
+      if (err) throw err;
+    });
 })();  
 
 
