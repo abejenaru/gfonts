@@ -4,5 +4,8 @@
     "dotenv": "^8.2.0",
     "https-proxy-agent": "^5.0.0",
     "node-fetch": "^2.6.1"
+  },
+  "scripts": {
+    "start": "node gfonts.js"
   }
 }

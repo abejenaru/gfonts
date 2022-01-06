@@ -68,8 +68,9 @@ const fontFamilies = Object.keys(fontsConfig);
 
   
   // Loop throught the monitored fonts.
+  let output = '';
   for (const fontFamily of fontFamilies) {
-    console.log(`Processing '${fontFamily}' font family...`);
+    process.stdout.write(`Processing '${fontFamily}': `);
 
     const fontFamilyFolder = [FONTS_FOLDER, '/', fontFamily].join('');
     const localFontVersion = fontsConfig[fontFamily];
@@ -85,17 +86,18 @@ const fontFamilies = Object.keys(fontsConfig);
 
     // Check if font family exists.
     if (remoteFontVersion === '') {
-      console.log("  font family doesn't exist on server! Is the spelling correct?");
+      console.log("font family doesn't exist on server! Is the spelling correct?");
       continue;
     }
 
     // Check versions.
     if (remoteFontVersion === localFontVersion) {
-      console.log(`  latest version ${localFontVersion} already downloaded, skipping.`);
+      console.log(`version ${localFontVersion} already present, skipping.`);
       continue;
     }
 
-    process.stdout.write(`  new version ${remoteFontVersion} found... `);
+    process.stdout.write(`new version ${remoteFontVersion} found... `);
+    output += `${fontFamily} ${localFontVersion} -> ${remoteFontVersion}`;
 
     // Check for font family folder.
     try {
@@ -206,6 +208,11 @@ const fontFamilies = Object.keys(fontsConfig);
   fs.writeFile(FONTS_DEFINITION_FILE, JSON.stringify(fontsConfig, null, 2), (err) => {
       if (err) throw err;
     });
+
+  if (output.length > 0) {
+    console.log('Summary:');
+    console.log(output);
+  }
 })();  
 
 
