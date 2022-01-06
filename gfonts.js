@@ -97,7 +97,7 @@ const fontFamilies = Object.keys(fontsConfig);
     }
 
     process.stdout.write(`new version ${remoteFontVersion} found... `);
-    output += `${fontFamily} ${localFontVersion} -> ${remoteFontVersion}`;
+    output += `${fontFamily} ${localFontVersion} -> ${remoteFontVersion}\n`;
 
     // Check for font family folder.
     try {
