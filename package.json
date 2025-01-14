@@ -1,11 +1,16 @@
 {
-  "private": "true",
+  "name": "gfonts",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22.0.0"
+  },
   "dependencies": {
-    "dotenv": "^8.2.0",
-    "https-proxy-agent": "^5.0.0",
-    "node-fetch": "^2.6.7"
+    "@dotenvx/dotenvx": "^0.6.0",
+    "https-proxy-agent": "^7.0.2"
   },
   "scripts": {
     "start": "node gfonts.js"
-  }
+  },
+  "packageManager": "pnpm@8.14.1"
 }

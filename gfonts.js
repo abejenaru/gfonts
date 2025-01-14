@@ -1,13 +1,14 @@
-const os = require("os");
-const fs = require('fs');
-const fetch = require('node-fetch');
-const HttpsProxyAgent = require('https-proxy-agent');
-require('dotenv').config()
+import os from 'node:os';
+import fs from 'node:fs';
+import HttpsProxyAgent from 'https-proxy-agent';
+import { config } from '@dotenvx/dotenvx';
+
+config()
 
 const DEBUG = false;
-const API_KEY = process.env.GFONTS_API_KEY;
+const API_KEY = process.env.GOOGLE_WEB_FONTS_DEVELOPER_API_KEY;
 if (typeof API_KEY === "undefined") {
-  console.log('Missing env variable GFONTS_API_KEY! Use the provided .env file to store yor Google fonts API key.');
+  console.log('Missing env variable GOOGLE_WEB_FONTS_DEVELOPER_API_KEY! Use the provided .env file to store your Google fonts API key.');
   process.exit();
 }
 
@@ -18,7 +19,7 @@ const FONTS_FOLDER = 'fonts';
 const WEBFONTS_API_URL = new URL('https://www.googleapis.com/webfonts/v1/webfonts');
 const CSS_API_URL = new URL('https://fonts.googleapis.com/css2');
 
-const headers = new fetch.Headers({ 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.83 Safari/537.36' });
+const headers = { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.83 Safari/537.36' };
 const proxyUrl = process.env.https_proxy || process.env.http_proxy;
 let agent;
 if (typeof proxyUrl != "undefined" && proxyUrl.length > 0) {
@@ -153,10 +154,14 @@ const fontFamilies = Object.keys(fontsConfig);
 
           // Fetch font files (.woff).
           fetch(fontUrl, FETCH_OPTS)
-            .then(res => res.buffer())
-            .then(buffer => fs.writeFile([fontFamilyFolder, '/', fontFileName].join(''), buffer, (err) => {
-              if (err) throw err;
-            }));
+            .then(res => res.arrayBuffer())
+            .then(arrayBuffer => fs.writeFile(
+              [fontFamilyFolder, '/', fontFileName].join(''), 
+              Buffer.from(arrayBuffer), 
+              (err) => {
+                if (err) throw err;
+              }
+            ));
 
           // Replace remote URLs with local.
           cssBody   = cssBody.replace(fontUrl, ["'", fontFileName, "'"].join(''));
