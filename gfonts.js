@@ -1,9 +1,11 @@
+'use strict';
+
 import os from 'node:os';
 import fs from 'node:fs';
 import HttpsProxyAgent from 'https-proxy-agent';
 import { config } from '@dotenvx/dotenvx';
 
-config()
+config({path: '.env'});
 
 const DEBUG = false;
 const API_KEY = process.env.GOOGLE_WEB_FONTS_DEVELOPER_API_KEY;

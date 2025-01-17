@@ -1,16 +1,25 @@
 {
   "name": "gfonts",
-  "private": true,
-  "type": "module",
-  "engines": {
-    "node": ">=22.0.0"
+  "version": "1.0.0",
+  "description": "Node script to download & maintain a local Google Fonts cache",
+  "homepage": "https://github.com/abejenaru/gfonts#readme",
+  "license": "MIT",
+  "author": "Andrei Bejenaru",
+  "main": "gfonts.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/abejenaru/gfonts.git"
   },
+  "type": "module",
   "dependencies": {
-    "@dotenvx/dotenvx": "^0.6.0",
-    "https-proxy-agent": "^7.0.2"
+    "@dotenvx/dotenvx": "^1.33.0",
+    "https-proxy-agent": "^7.0.6"
   },
   "scripts": {
-    "start": "node gfonts.js"
+    "sync": "node gfonts.js"
   },
-  "packageManager": "pnpm@8.14.1"
+  "engines": {
+    "node": ">=22.0.0",
+    "pnpm": ">=9.0.0"
+  }
 }

@@ -1,1 +1,1 @@
-# gfonts: nodejs script to download & maintain a local Google Fonts repository
+# GFonts: Node script to download & maintain a local Google Fonts cache
